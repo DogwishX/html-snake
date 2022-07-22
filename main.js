@@ -1,20 +1,30 @@
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 
-ctx.beginPath();
-ctx.rect(20, 40, 50, 50);
-ctx.fillStyle = "#FF0000";
-ctx.fill();
-ctx.closePath();
+const blockSize = 10;
 
-ctx.beginPath();
-ctx.arc(240, 160, 20, 0, Math.PI * 2, false);
-ctx.fillStyle = "green";
-ctx.fill();
-ctx.closePath();
+const snake = {
+  head: {
+    x: 50,
+    y: 50,
+    height: blockSize,
+    width: blockSize,
+  },
+};
 
-ctx.beginPath();
-ctx.rect(160, 10, 100, 40);
-ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
-ctx.stroke();
-ctx.closePath();
+drawGame();
+
+function drawGame() {
+  window.requestAnimationFrame(drawGame);
+  ctx.fillStyle = "white";
+  drawSnake();
+}
+
+function drawSnake() {
+  drawHead();
+}
+
+function drawHead() {
+  const { x, y, height, width } = snake.head;
+  ctx.fillRect(x, y, width, height);
+}
