@@ -8,6 +8,7 @@ window.addEventListener("keydown", handleKeydown);
 const gameWidth = 400;
 const gameHeight = 380;
 const blockSize = 10;
+const snakeMovement = 1;
 ctx.fillStyle = "white";
 
 // Snake
@@ -27,6 +28,22 @@ class SnakePart {
 
   move(key) {
     this.y += this.yMovement;
+    this.x += this.xMovement;
+    if (key === "w") this.changeDirection("y", -1);
+    if (key === "a") this.changeDirection("x", -1);
+    if (key === "s") this.changeDirection("y", 1);
+    if (key === "d") this.changeDirection("x", 1);
+  }
+
+  changeDirection(isX, positiveOrNegative) {
+    if (isX === "x") {
+      this.yMovement = 0;
+      this.xMovement = snakeMovement * positiveOrNegative;
+      return;
+    }
+
+    this.yMovement = snakeMovement * positiveOrNegative;
+    this.xMovement = 0;
   }
 }
 
