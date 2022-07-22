@@ -2,23 +2,42 @@ const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 
 window.addEventListener("resize", resizeCanvas);
+window.addEventListener("keydown", handleKeydown);
 
 // Game settings
 const gameWidth = 400;
 const gameHeight = 380;
 const blockSize = 10;
+ctx.fillStyle = "white";
 
 // Snake
+class SnakePart {
+  constructor({ x, y, height, width }) {
+    this.x = x;
+    this.y = y;
+    this.height = height;
+    this.width = width;
+    this.xMovement = 0;
+    this.yMovement = 1;
+  }
+
+  draw() {
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+  }
+
+  move(key) {
+    this.y += this.yMovement;
+  }
+}
+
 const snake = {
-  head: {
+  head: new SnakePart({
     x: canvas.width / 2,
     y: canvas.height / 2,
     height: blockSize,
     width: blockSize,
-  },
+  }),
 };
-
-drawGame();
 
 function resizeCanvas() {
   canvas.width = window.innerWidth < gameWidth ? window.innerWidth : gameWidth;
@@ -32,16 +51,26 @@ function centerSnake() {
 }
 
 function drawGame() {
-  window.requestAnimationFrame(drawGame);
-  ctx.fillStyle = "white";
+  drawFrame();
   drawSnake();
 }
 
-function drawSnake() {
-  drawHead();
+function drawFrame() {
+  window.requestAnimationFrame(drawGame);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-function drawHead() {
-  const { x, y, height, width } = snake.head;
-  ctx.fillRect(x, y, width, height);
+function drawSnake() {
+  const { head } = snake;
+  head.move();
+  head.draw();
 }
+
+function handleKeydown({ key }) {
+  const lowerCaseKey = key.toLowerCase();
+  const validKeys = ["w", "a", "s", "d"];
+
+  if (validKeys.includes(lowerCaseKey)) return snake.head.move(lowerCaseKey);
+}
+
+drawGame();
