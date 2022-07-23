@@ -11,8 +11,7 @@ const blockSize = 10;
 const snakeMovement = 1;
 ctx.fillStyle = "white";
 
-// Snake
-class SnakePart {
+class GameObject {
   constructor({ x, y, height, width }) {
     this.x = x;
     this.y = y;
@@ -25,7 +24,26 @@ class SnakePart {
   }
 }
 
-class SnakeHead extends SnakePart {
+class Fruit extends GameObject {
+  constructor(props) {
+    super(props);
+  }
+
+  reposition() {
+    this.x = Math.floor(Math.random() * canvas.width);
+    this.y = Math.floor(Math.random() * canvas.height);
+  }
+}
+
+let fruit = new Fruit({
+  x: 50,
+  y: 50,
+  height: blockSize,
+  width: blockSize,
+});
+
+// Snake
+class SnakeHead extends GameObject {
   constructor(props) {
     super(props);
     this.xMovement = 0;
@@ -91,6 +109,8 @@ function centerSnake() {
 function drawGame() {
   drawFrame();
   drawSnake();
+  fruit.draw();
+  fruit.reposition();
 }
 
 function drawFrame() {
@@ -108,5 +128,7 @@ function handleKeydown({ key }) {
   const lowerCaseKey = key.toLowerCase();
   snake.head.move(lowerCaseKey);
 }
+
+function drawFruit() {}
 
 drawGame();
