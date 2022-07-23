@@ -18,21 +18,42 @@ class SnakePart {
     this.y = y;
     this.height = height;
     this.width = width;
-    this.xMovement = 0;
-    this.yMovement = 1;
   }
 
   draw() {
     ctx.fillRect(this.x, this.y, this.width, this.height);
   }
+}
+
+class SnakeHead extends SnakePart {
+  constructor(props) {
+    super(props);
+    this.xMovement = 0;
+    this.yMovement = 1;
+  }
 
   move(key) {
+    const { moveUp, moveDown, moveLeft, moveRight } = {
+      moveUp: () => this.changeDirection("y", -1),
+      moveDown: () => this.changeDirection("y", 1),
+      moveLeft: () => this.changeDirection("x", -1),
+      moveRight: () => this.changeDirection("x", 1),
+    };
+
+    const inputs = {
+      w: moveUp,
+      a: moveLeft,
+      s: moveDown,
+      d: moveRight,
+      arrowup: moveUp,
+      arrowleft: moveLeft,
+      arrowdown: moveDown,
+      arrowright: moveRight,
+    };
+
+    if (inputs[key]) inputs[key]();
     this.y += this.yMovement;
     this.x += this.xMovement;
-    if (key === "w") this.changeDirection("y", -1);
-    if (key === "a") this.changeDirection("x", -1);
-    if (key === "s") this.changeDirection("y", 1);
-    if (key === "d") this.changeDirection("x", 1);
   }
 
   changeDirection(isX, positiveOrNegative) {
@@ -48,7 +69,7 @@ class SnakePart {
 }
 
 const snake = {
-  head: new SnakePart({
+  head: new SnakeHead({
     x: canvas.width / 2,
     y: canvas.height / 2,
     height: blockSize,
@@ -85,9 +106,7 @@ function drawSnake() {
 
 function handleKeydown({ key }) {
   const lowerCaseKey = key.toLowerCase();
-  const validKeys = ["w", "a", "s", "d"];
-
-  if (validKeys.includes(lowerCaseKey)) return snake.head.move(lowerCaseKey);
+  snake.head.move(lowerCaseKey);
 }
 
 drawGame();
