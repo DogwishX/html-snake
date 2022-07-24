@@ -89,6 +89,27 @@ class SnakeHead extends GameObject {
       this[`${xOrY}Movement`] !== 0
     );
   }
+
+  detectCollision() {
+    const xAxisCollided =
+      this.x + this.width >= fruit.x && this.x <= fruit.x + fruit.width;
+    const yAxisCollided =
+      this.y + this.height >= fruit.y && this.y <= fruit.y + fruit.height;
+
+    if (xAxisCollided && yAxisCollided) this.fruitEaten();
+  }
+
+  fruitEaten() {
+    fruit.reposition();
+    snake.body.push(
+      new GameObject({
+        x: this.x,
+        y: this.y,
+        height: blockSize,
+        width: blockSize,
+      })
+    );
+  }
 }
 
 const snake = {
@@ -98,6 +119,7 @@ const snake = {
     height: blockSize,
     width: blockSize,
   }),
+  body: [],
 };
 
 function resizeCanvas() {
@@ -113,8 +135,9 @@ function centerSnake() {
 
 function drawGame() {
   drawFrame();
-  drawSnake();
   fruit.draw();
+  snake.head.detectCollision();
+  drawSnake();
 }
 
 function drawFrame() {
@@ -123,9 +146,20 @@ function drawFrame() {
 }
 
 function drawSnake() {
-  const { head } = snake;
+  const { head, body } = snake;
   head.move();
   head.draw();
+
+  body.pop();
+  body.unshift(
+    new GameObject({
+      x: head.x + blockSize,
+      y: head.y + blockSize,
+      height: blockSize,
+      width: blockSize,
+    })
+  );
+  body.forEach((bodyPart) => bodyPart.draw());
 }
 
 function handleKeydown({ key }) {
