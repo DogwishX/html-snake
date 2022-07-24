@@ -74,15 +74,20 @@ class SnakeHead extends GameObject {
     this.x += this.xMovement;
   }
 
-  changeDirection(isX, positiveOrNegative) {
-    if (isX === "x") {
-      this.yMovement = 0;
-      this.xMovement = snakeMovement * positiveOrNegative;
-      return;
-    }
+  changeDirection(xOrY, positiveOrNegative) {
+    // Prevent from going in opposite direction
+    if (this.isOppositeDirection(xOrY, positiveOrNegative)) return;
 
-    this.yMovement = snakeMovement * positiveOrNegative;
+    this.yMovement = 0;
     this.xMovement = 0;
+    this[`${xOrY}Movement`] = snakeMovement * positiveOrNegative;
+  }
+
+  isOppositeDirection(xOrY, positiveOrNegative) {
+    return (
+      Math.sign(this[`${xOrY}Movement`]) !== positiveOrNegative &&
+      this[`${xOrY}Movement`] !== 0
+    );
   }
 }
 
@@ -110,7 +115,6 @@ function drawGame() {
   drawFrame();
   drawSnake();
   fruit.draw();
-  fruit.reposition();
 }
 
 function drawFrame() {
