@@ -141,7 +141,6 @@ function drawGame() {
 }
 
 function drawFrame() {
-  window.requestAnimationFrame(drawGame);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
@@ -153,8 +152,8 @@ function drawSnake() {
   body.pop();
   body.unshift(
     new GameObject({
-      x: head.x + blockSize,
-      y: head.y + blockSize,
+      x: head.x,
+      y: head.y,
       height: blockSize,
       width: blockSize,
     })
@@ -169,4 +168,4 @@ function handleKeydown({ key }) {
 
 function drawFruit() {}
 
-drawGame();
+setInterval(drawGame, 10);
