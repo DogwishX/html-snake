@@ -166,6 +166,4 @@ function handleKeydown({ key }) {
   snake.head.move(lowerCaseKey);
 }
 
-function drawFruit() {}
-
-setInterval(drawGame, 10);
+setInterval(drawGame, 11);
