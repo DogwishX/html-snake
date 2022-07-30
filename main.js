@@ -5,22 +5,23 @@ window.addEventListener("resize", resizeCanvas);
 window.addEventListener("keydown", handleKeydown);
 
 // Game settings
-const gameWidth = 400;
-const gameHeight = 380;
+const defaultGameWidth = 400;
+const defaultGameHeight = 400;
 const blockSize = 10;
 const snakeMovement = 1;
+const fps = 10;
+let gridRows = canvas.width / blockSize;
+let gridColumns = canvas.height / blockSize;
 ctx.fillStyle = "white";
 
 class GameObject {
-  constructor({ x, y, height, width }) {
+  constructor({ x, y }) {
     this.x = x;
     this.y = y;
-    this.height = height;
-    this.width = width;
   }
 
   draw() {
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.fillRect(this.x, this.y, blockSize, blockSize);
   }
 }
 
@@ -30,14 +31,15 @@ class Fruit extends GameObject {
   }
 
   reposition() {
-    this.x = Math.floor(Math.random() * canvas.width);
-    this.y = Math.floor(Math.random() * canvas.height);
+    this.x = Math.floor(Math.random() * gridColumns) * blockSize;
+    this.y = Math.floor(Math.random() * gridRows) * blockSize;
+    console.log(this.x, this.y);
   }
 }
 
 let fruit = new Fruit({
-  x: 50,
-  y: 50,
+  x: 5 * blockSize,
+  y: 5 * blockSize,
   height: blockSize,
   width: blockSize,
 });
@@ -47,7 +49,7 @@ class SnakeHead extends GameObject {
   constructor(props) {
     super(props);
     this.xMovement = 0;
-    this.yMovement = 1;
+    this.yMovement = 0;
   }
 
   move(key) {
@@ -70,31 +72,36 @@ class SnakeHead extends GameObject {
     };
 
     if (inputs[key]) inputs[key]();
-    this.y += this.yMovement;
-    this.x += this.xMovement;
+    this.y += this.yMovement * blockSize;
+    this.x += this.xMovement * blockSize;
   }
 
   changeDirection(xOrY, positiveOrNegative) {
-    // Prevent from going in opposite direction
-    if (this.isOppositeDirection(xOrY, positiveOrNegative)) return;
+    // This will prevent accelleration and user error [going into the body]
+    if (this.isSameOrOppositeDirection(xOrY, positiveOrNegative)) return;
 
     this.yMovement = 0;
     this.xMovement = 0;
     this[`${xOrY}Movement`] = snakeMovement * positiveOrNegative;
   }
 
-  isOppositeDirection(xOrY, positiveOrNegative) {
-    return (
+  isSameOrOppositeDirection(xOrY, positiveOrNegative) {
+    const isOppositeDirection =
       Math.sign(this[`${xOrY}Movement`]) !== positiveOrNegative &&
-      this[`${xOrY}Movement`] !== 0
-    );
+      this[`${xOrY}Movement`] !== 0;
+
+    const isSameDirection =
+      Math.sign(this[`${xOrY}Movement`]) === positiveOrNegative &&
+      this[`${xOrY}Movement`] !== 0;
+
+    return isOppositeDirection || isSameDirection;
   }
 
   detectCollision() {
     const xAxisCollided =
-      this.x + this.width >= fruit.x && this.x <= fruit.x + fruit.width;
+      this.x + blockSize >= fruit.x && this.x <= fruit.x + blockSize;
     const yAxisCollided =
-      this.y + this.height >= fruit.y && this.y <= fruit.y + fruit.height;
+      this.y + blockSize >= fruit.y && this.y <= fruit.y + blockSize;
 
     if (xAxisCollided && yAxisCollided) this.fruitEaten();
   }
@@ -105,8 +112,6 @@ class SnakeHead extends GameObject {
       new GameObject({
         x: this.x,
         y: this.y,
-        height: blockSize,
-        width: blockSize,
       })
     );
   }
@@ -116,14 +121,20 @@ const snake = {
   head: new SnakeHead({
     x: canvas.width / 2,
     y: canvas.height / 2,
-    height: blockSize,
-    width: blockSize,
   }),
   body: [],
 };
 
 function resizeCanvas() {
-  canvas.width = window.innerWidth < gameWidth ? window.innerWidth : gameWidth;
+  const newWidth =
+    window.innerWidth < defaultGameWidth ? window.innerWidth : defaultGameWidth;
+  const newHeight =
+    window.innerWidth < defaultGameWidth ? window.innerWidth : defaultGameWidth;
+  canvas.width = newWidth;
+  canvas.height = newHeight;
+  gridColumns = newWidth / blockSize;
+  gridRows = newHeight / blockSize;
+
   centerSnake();
 }
 
@@ -168,4 +179,5 @@ function handleKeydown({ key }) {
 
 function drawFruit() {}
 
-setInterval(drawGame, 11);
+drawGame();
+setInterval(drawGame, 1000 / fps);
