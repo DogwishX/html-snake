@@ -1,1 +1,11 @@
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+}
 
+canvas {
+  box-shadow: 2px 2px 15px 5px rgba(0, 0, 0, 0.5);
+}

@@ -61,6 +61,13 @@ function updateSnakeCoordinates() {
 
 function detectCollision() {
   if (snake.head.y === fruit.y && snake.head.x === fruit.x) return handleEat();
+  if (
+    snake.body.find(
+      ({ x, y }, index) =>
+        x === snake.head.x && y === snake.head.y && index !== 0
+    )
+  )
+    gameOver();
 }
 
 function handleEat() {
@@ -68,6 +75,13 @@ function handleEat() {
   increaseDifficulty();
   increaseBodySize();
   repositionFruit();
+}
+
+function gameOver() {
+  alert("game over");
+  (localStorage.hiScore || 0) < score && localStorage.setItem("hiScore", score);
+  clearInterval(gameInterval);
+  score = 0;
 }
 
 function increaseDifficulty() {
