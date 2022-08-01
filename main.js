@@ -26,6 +26,7 @@ let fruit = {
 };
 
 // Initialization
+let score = 0;
 canvas.height = gameColumns * tileSize;
 canvas.width = gameRows * tileSize;
 
@@ -35,6 +36,7 @@ function drawGame() {
   updateSnakeCoordinates();
   detectCollision();
   drawSnake();
+  drawScore();
 }
 
 function resetFrame() {
@@ -62,6 +64,7 @@ function detectCollision() {
 }
 
 function handleEat() {
+  score += 50;
   increaseDifficulty();
   increaseBodySize();
   repositionFruit();
@@ -128,4 +131,15 @@ function changeDirection(xOrY, positiveOrNegative) {
 function isOppositeDirection(xOrY, positiveOrNegative) {
   const xOrYMovement = snake.head[`${xOrY}Movement`];
   return Math.sign(xOrYMovement) !== positiveOrNegative && xOrYMovement !== 0;
+}
+
+function drawScore() {
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "white";
+  ctx.fillText(`Score:  ${score}`, canvas.width - 120, 30);
+  ctx.fillText(
+    `Hi-score:  ${localStorage.hiScore || score}`,
+    canvas.width - 120,
+    50
+  );
 }
