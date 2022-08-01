@@ -60,14 +60,18 @@ function updateSnakeCoordinates() {
 }
 
 function detectCollision() {
-  if (snake.head.y === fruit.y && snake.head.x === fruit.x) return handleEat();
-  if (
-    snake.body.find(
-      ({ x, y }, index) =>
-        x === snake.head.x && y === snake.head.y && index !== 0
-    )
-  )
-    gameOver();
+  const hasHitBody = snake.body.find(
+    ({ x, y }, index) => x === snake.head.x && y === snake.head.y && index !== 0
+  );
+  const hasHitFruit = snake.head.y === fruit.y && snake.head.x === fruit.x;
+  const hasHitWall =
+    snake.head.y >= gameRows * tileSize ||
+    snake.head.y < 0 ||
+    snake.head.x >= gameColumns * tileSize ||
+    snake.head.x < 0;
+
+  if (hasHitFruit) return handleEat();
+  if (hasHitBody || hasHitWall) gameOver();
 }
 
 function handleEat() {
@@ -78,10 +82,19 @@ function handleEat() {
 }
 
 function gameOver() {
-  alert("game over");
+  alert("Game Over");
   (localStorage.hiScore || 0) < score && localStorage.setItem("hiScore", score);
+  resetGame();
+}
+
+function resetGame() {
   clearInterval(gameInterval);
+  gameSpeed = 50;
   score = 0;
+  gameInterval = setInterval(drawGame, gameSpeed);
+  snake.head.x = canvas.width / 2;
+  snake.head.y = canvas.height / 2;
+  snake.body = [];
 }
 
 function increaseDifficulty() {
