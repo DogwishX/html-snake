@@ -1,183 +1,131 @@
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 
-window.addEventListener("resize", resizeCanvas);
-window.addEventListener("keydown", handleKeydown);
+// Game Settings
+const tileSize = 10;
+const gameRows = (gameColumns = 40);
+let gameSpeed = 50; // Lower value = faster
+let gameInterval = setInterval(drawGame, gameSpeed);
 
-// Game settings
-const defaultGameWidth = 400;
-const defaultGameHeight = 400;
-const blockSize = 10;
-const snakeMovement = 1;
-const fps = 10;
-let gridRows = canvas.width / blockSize;
-let gridColumns = canvas.height / blockSize;
-ctx.fillStyle = "white";
-
-class GameObject {
-  constructor({ x, y }) {
-    this.x = x;
-    this.y = y;
-  }
-
-  draw() {
-    ctx.fillRect(this.x, this.y, blockSize, blockSize);
-  }
-}
-
-class Fruit extends GameObject {
-  constructor(props) {
-    super(props);
-  }
-
-  reposition() {
-    this.x = Math.floor(Math.random() * gridColumns) * blockSize;
-    this.y = Math.floor(Math.random() * gridRows) * blockSize;
-    console.log(this.x, this.y);
-  }
-}
-
-let fruit = new Fruit({
-  x: 5 * blockSize,
-  y: 5 * blockSize,
-  height: blockSize,
-  width: blockSize,
-});
-
-// Snake
-class SnakeHead extends GameObject {
-  constructor(props) {
-    super(props);
-    this.xMovement = 0;
-    this.yMovement = 0;
-  }
-
-  move(key) {
-    const { moveUp, moveDown, moveLeft, moveRight } = {
-      moveUp: () => this.changeDirection("y", -1),
-      moveDown: () => this.changeDirection("y", 1),
-      moveLeft: () => this.changeDirection("x", -1),
-      moveRight: () => this.changeDirection("x", 1),
-    };
-
-    const inputs = {
-      w: moveUp,
-      a: moveLeft,
-      s: moveDown,
-      d: moveRight,
-      arrowup: moveUp,
-      arrowleft: moveLeft,
-      arrowdown: moveDown,
-      arrowright: moveRight,
-    };
-
-    if (inputs[key]) inputs[key]();
-    this.y += this.yMovement * blockSize;
-    this.x += this.xMovement * blockSize;
-  }
-
-  changeDirection(xOrY, positiveOrNegative) {
-    // This will prevent accelleration and user error [going into the body]
-    if (this.isSameOrOppositeDirection(xOrY, positiveOrNegative)) return;
-
-    this.yMovement = 0;
-    this.xMovement = 0;
-    this[`${xOrY}Movement`] = snakeMovement * positiveOrNegative;
-  }
-
-  isSameOrOppositeDirection(xOrY, positiveOrNegative) {
-    const isOppositeDirection =
-      Math.sign(this[`${xOrY}Movement`]) !== positiveOrNegative &&
-      this[`${xOrY}Movement`] !== 0;
-
-    const isSameDirection =
-      Math.sign(this[`${xOrY}Movement`]) === positiveOrNegative &&
-      this[`${xOrY}Movement`] !== 0;
-
-    return isOppositeDirection || isSameDirection;
-  }
-
-  detectCollision() {
-    const xAxisCollided =
-      this.x + blockSize >= fruit.x && this.x <= fruit.x + blockSize;
-    const yAxisCollided =
-      this.y + blockSize >= fruit.y && this.y <= fruit.y + blockSize;
-
-    if (xAxisCollided && yAxisCollided) this.fruitEaten();
-  }
-
-  fruitEaten() {
-    fruit.reposition();
-    snake.body.push(
-      new GameObject({
-        x: this.x,
-        y: this.y,
-      })
-    );
-  }
-}
-
-const snake = {
-  head: new SnakeHead({
+// Game Objects
+let snake = {
+  head: {
+    color: "lightblue",
     x: canvas.width / 2,
     y: canvas.height / 2,
-  }),
+    xMovement: 0,
+    yMovement: 0,
+  },
   body: [],
 };
 
-function resizeCanvas() {
-  const newWidth =
-    window.innerWidth < defaultGameWidth ? window.innerWidth : defaultGameWidth;
-  const newHeight =
-    window.innerWidth < defaultGameWidth ? window.innerWidth : defaultGameWidth;
-  canvas.width = newWidth;
-  canvas.height = newHeight;
-  gridColumns = newWidth / blockSize;
-  gridRows = newHeight / blockSize;
+let fruit = {
+  color: "lightpink",
+  x: 5 * tileSize,
+  y: 5 * tileSize,
+};
 
-  centerSnake();
-}
-
-function centerSnake() {
-  snake.head.x = canvas.width / 2;
-  snake.head.y = canvas.height / 2;
-  drawSnake();
-}
+// Initialization
+canvas.height = gameColumns * tileSize;
+canvas.width = gameRows * tileSize;
 
 function drawGame() {
-  drawFrame();
-  fruit.draw();
-  snake.head.detectCollision();
+  resetFrame();
+  drawTile(fruit);
+  updateSnakeCoordinates();
+  detectCollision();
   drawSnake();
 }
 
-function drawFrame() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function resetFrame() {
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawTile(obj) {
+  const { x, y, color = "white" } = obj;
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, tileSize, tileSize);
+}
+
+function updateSnakeCoordinates() {
+  snake.head.y += snake.head.yMovement * tileSize;
+  snake.head.x += snake.head.xMovement * tileSize;
+
+  // Update Body coordinates
+  snake.body.pop();
+  snake.body.unshift({ x: snake.head.x, y: snake.head.y });
+}
+
+function detectCollision() {
+  if (snake.head.y === fruit.y && snake.head.x === fruit.x) return handleEat();
+}
+
+function handleEat() {
+  increaseDifficulty();
+  increaseBodySize();
+  repositionFruit();
+}
+
+function increaseDifficulty() {
+  gameSpeed -= 0.5;
+  clearInterval(gameInterval);
+  gameInterval = setInterval(drawGame, gameSpeed);
+}
+
+function increaseBodySize() {
+  snake.body.push({ x: fruit.x, y: fruit.y });
+}
+
+function repositionFruit() {
+  fruit.x = Math.floor(Math.random() * gameColumns) * tileSize;
+  fruit.y = Math.floor(Math.random() * gameRows) * tileSize;
+  drawTile(fruit);
 }
 
 function drawSnake() {
-  const { head, body } = snake;
-  head.move();
-  head.draw();
-
-  body.pop();
-  body.unshift(
-    new GameObject({
-      x: head.x,
-      y: head.y,
-      height: blockSize,
-      width: blockSize,
-    })
-  );
-  body.forEach((bodyPart) => bodyPart.draw());
+  snake.body.forEach(drawTile);
+  drawTile(snake.head);
 }
 
-function handleKeydown({ key }) {
+// Movement
+
+window.addEventListener("keyup", moveSnake);
+
+function moveSnake({ key }) {
   const lowerCaseKey = key.toLowerCase();
-  snake.head.move(lowerCaseKey);
+
+  const { moveUp, moveDown, moveLeft, moveRight } = {
+    moveUp: () => changeDirection("y", -1),
+    moveDown: () => changeDirection("y", 1),
+    moveLeft: () => changeDirection("x", -1),
+    moveRight: () => changeDirection("x", 1),
+  };
+
+  const inputs = {
+    w: moveUp,
+    a: moveLeft,
+    s: moveDown,
+    d: moveRight,
+    arrowup: moveUp,
+    arrowleft: moveLeft,
+    arrowdown: moveDown,
+    arrowright: moveRight,
+  };
+
+  if (inputs[lowerCaseKey]) inputs[lowerCaseKey]();
 }
 
-function drawFruit() {}
+function changeDirection(xOrY, positiveOrNegative) {
+  // This will prevent user error [going into the body]
+  if (isOppositeDirection(xOrY, positiveOrNegative)) return;
 
-drawGame();
-setInterval(drawGame, 1000 / fps);
+  snake.head.yMovement = 0;
+  snake.head.xMovement = 0;
+  snake.head[`${xOrY}Movement`] = positiveOrNegative;
+}
+
+function isOppositeDirection(xOrY, positiveOrNegative) {
+  const xOrYMovement = snake.head[`${xOrY}Movement`];
+  return Math.sign(xOrYMovement) !== positiveOrNegative && xOrYMovement !== 0;
+}
