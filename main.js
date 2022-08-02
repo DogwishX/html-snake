@@ -110,6 +110,14 @@ function increaseBodySize() {
 function repositionFruit() {
   fruit.x = Math.floor(Math.random() * gameColumns) * tileSize;
   fruit.y = Math.floor(Math.random() * gameRows) * tileSize;
+
+  const isFruitInBody = snake.body.find(
+    ({ x, y }) => x === fruit.x && y === fruit.y
+  );
+  const isFruitInHighScore = fruit.x >= canvas.width - 120 && fruit.y <= 80;
+
+  if (isFruitInBody || isFruitInHighScore) return repositionFruit();
+
   drawTile(fruit);
 }
 
@@ -120,11 +128,10 @@ function drawSnake() {
 
 // Movement
 
-window.addEventListener("keyup", moveSnake);
+window.addEventListener("keydown", moveSnake);
 
 function moveSnake({ key }) {
   const lowerCaseKey = key.toLowerCase();
-
   const { moveUp, moveDown, moveLeft, moveRight } = {
     moveUp: () => changeDirection("y", -1),
     moveDown: () => changeDirection("y", 1),
@@ -143,7 +150,9 @@ function moveSnake({ key }) {
     arrowright: moveRight,
   };
 
-  if (inputs[lowerCaseKey]) inputs[lowerCaseKey]();
+  if (inputs[lowerCaseKey]) {
+    inputs[lowerCaseKey]();
+  }
 }
 
 function changeDirection(xOrY, positiveOrNegative) {
